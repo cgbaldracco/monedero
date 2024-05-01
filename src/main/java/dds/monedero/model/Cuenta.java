@@ -13,6 +13,7 @@ public class Cuenta {
 
   private double saldo = 0;
   private List<Movimiento> movimientos = new ArrayList<>();
+  private static Integer MAX_DEPOSITOS_DIARIOS = 3;
 
   public Cuenta() {
     saldo = 0;
@@ -26,37 +27,47 @@ public class Cuenta {
     this.movimientos = movimientos;
   }
 
-  private boolean montoMayorACero(double monto) {
-    return monto > 0;
+  private void verificarMontoValido(double monto) {
+    if (monto < 0) {
+      throw new MontoNegativoException("El monto a extraer debe ser un valor positivo");
+    }
   }
 
-  //no es "largo" pero se puede descomponer
-  public void poner(double monto) {
-    if (!montoMayorACero(monto)) {
-      throw new MontoNegativoException("El monto a ingresar debe ser un valor positivo");
+  private void verificarLimiteDeDepositosDiarios(LocalDate fecha) {
+    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito() &&
+        movimiento.esDeLaFecha(fecha)).count() >= MAX_DEPOSITOS_DIARIOS) {
+      throw new MaximaCantidadDepositosException("Ya excedio los " + MAX_DEPOSITOS_DIARIOS + " depositos diarios.");
     }
+  }
 
-    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
-      throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
-    }
+  public void poner(double monto) {
+    verificarMontoValido(monto);
+    verificarLimiteDeDepositosDiarios(LocalDate.now());
 
     new Movimiento(LocalDate.now(), monto, true).agregateA(this);
   }
 
-  //aca veo un long method, se puede descomponer tranquilamente en 3 metodos separados
-  public void sacar(double monto) {
-    if (!montoMayorACero(monto)) {
-      throw new MontoNegativoException("El monto a extraer debe ser un valor positivo");
-    }
+  private void verificarExtraccionExcedeSaldo(double monto) {
     if (getSaldo() - monto < 0) {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
+  }
+
+  private void verificarLimiteDiario(double monto) {
     double montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
     double limite = 1000 - montoExtraidoHoy;
     if (monto > limite) {
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
           + " diarios, límite: " + limite);
     }
+  }
+
+  //aca veo un long method, se puede descomponer tranquilamente en 3 metodos separados
+  public void sacar(double monto) {
+    verificarMontoValido(monto);
+    verificarExtraccionExcedeSaldo(monto);
+    verificarLimiteDiario(monto);
+
     new Movimiento(LocalDate.now(), monto, false).agregateA(this);
   }
 
