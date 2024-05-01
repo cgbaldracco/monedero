@@ -44,7 +44,7 @@ public class Cuenta {
     verificarMontoValido(monto);
     verificarLimiteDeDepositosDiarios(LocalDate.now());
 
-    new Movimiento(LocalDate.now(), monto, true).agregateA(this);
+    agregarMovimiento(LocalDate.now(), monto, true);
   }
 
   private void verificarExtraccionExcedeSaldo(double monto) {
@@ -68,12 +68,13 @@ public class Cuenta {
     verificarExtraccionExcedeSaldo(monto);
     verificarLimiteDiario(monto);
 
-    new Movimiento(LocalDate.now(), monto, false).agregateA(this);
+    agregarMovimiento(LocalDate.now(), monto, false);
   }
 
-  public void agregarMovimiento(LocalDate fecha, double cuanto, boolean esDeposito) {
-    Movimiento movimiento = new Movimiento(fecha, cuanto, esDeposito);
+  public void agregarMovimiento(LocalDate fecha, double monto, boolean esDeposito) {
+    Movimiento movimiento = new Movimiento(fecha, monto, esDeposito);
     movimientos.add(movimiento);
+    setSaldo(actualizarSaldo(monto, movimiento.isDeposito()));
   }
 
   public double getMontoExtraidoA(LocalDate fecha) {
@@ -95,4 +96,10 @@ public class Cuenta {
     this.saldo = saldo;
   }
 
+  public double actualizarSaldo(double monto, boolean esDeposito) {
+    if (esDeposito) {
+      return getSaldo() + monto;
+    } else {
+      return getSaldo() - monto;
+    }
 }
