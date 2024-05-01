@@ -26,36 +26,38 @@ public class Cuenta {
     this.movimientos = movimientos;
   }
 
+  private boolean montoMayorACero(double monto) {
+    return monto > 0;
+  }
+
   //no es "largo" pero se puede descomponer
-  public void poner(double cuanto) {
-    //codigo duplicado en sacar
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+  public void poner(double monto) {
+    if (!montoMayorACero(monto)) {
+      throw new MontoNegativoException("El monto a ingresar debe ser un valor positivo");
     }
 
     if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
       throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
     }
 
-    new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
+    new Movimiento(LocalDate.now(), monto, true).agregateA(this);
   }
 
   //aca veo un long method, se puede descomponer tranquilamente en 3 metodos separados
-  public void sacar(double cuanto) {
-    //codigo duplicado en poner
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+  public void sacar(double monto) {
+    if (!montoMayorACero(monto)) {
+      throw new MontoNegativoException("El monto a extraer debe ser un valor positivo");
     }
-    if (getSaldo() - cuanto < 0) {
+    if (getSaldo() - monto < 0) {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
     double montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
     double limite = 1000 - montoExtraidoHoy;
-    if (cuanto > limite) {
+    if (monto > limite) {
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
           + " diarios, límite: " + limite);
     }
-    new Movimiento(LocalDate.now(), cuanto, false).agregateA(this);
+    new Movimiento(LocalDate.now(), monto, false).agregateA(this);
   }
 
   public void agregarMovimiento(LocalDate fecha, double cuanto, boolean esDeposito) {
