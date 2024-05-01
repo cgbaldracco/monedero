@@ -24,10 +24,10 @@ public class Movimiento {
     return fecha;
   }
 
+  //type test, metodos innecesarios que nisiquiera son utilizados
   public boolean fueDepositado(LocalDate fecha) {
     return isDeposito() && esDeLaFecha(fecha);
   }
-
   public boolean fueExtraido(LocalDate fecha) {
     return isExtraccion() && esDeLaFecha(fecha);
   }
@@ -44,6 +44,7 @@ public class Movimiento {
     return !esDeposito;
   }
 
+  //estos dos los veo como feature envy
   public void agregateA(Cuenta cuenta) {
     cuenta.setSaldo(calcularValor(cuenta));
     cuenta.agregarMovimiento(fecha, monto, esDeposito);

@@ -26,7 +26,9 @@ public class Cuenta {
     this.movimientos = movimientos;
   }
 
+  //no es "largo" pero se puede descomponer
   public void poner(double cuanto) {
+    //codigo duplicado en sacar
     if (cuanto <= 0) {
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
     }
@@ -38,7 +40,9 @@ public class Cuenta {
     new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
   }
 
+  //aca veo un long method, se puede descomponer tranquilamente en 3 metodos separados
   public void sacar(double cuanto) {
+    //codigo duplicado en poner
     if (cuanto <= 0) {
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
     }
