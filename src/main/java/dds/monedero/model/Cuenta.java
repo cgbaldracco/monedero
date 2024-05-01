@@ -40,7 +40,7 @@ public class Cuenta {
     }
   }
 
-  public void poner(double monto) {
+  public void ingreso(double monto) {
     verificarMontoValido(monto);
     verificarLimiteDeDepositosDiarios(LocalDate.now());
 
@@ -62,8 +62,7 @@ public class Cuenta {
     }
   }
 
-  //aca veo un long method, se puede descomponer tranquilamente en 3 metodos separados
-  public void sacar(double monto) {
+  public void extraccion(double monto) {
     verificarMontoValido(monto);
     verificarExtraccionExcedeSaldo(monto);
     verificarLimiteDiario(monto);
