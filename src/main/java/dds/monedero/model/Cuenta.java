@@ -34,17 +34,17 @@ public class Cuenta {
   }
 
   private void verificarLimiteDeDepositosDiarios(LocalDate fecha) {
-    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito() &&
+    if (getMovimientos().stream().filter(movimiento -> movimiento instanceof Deposito &&
         movimiento.esDeLaFecha(fecha)).count() >= MAX_DEPOSITOS_DIARIOS) {
       throw new MaximaCantidadDepositosException("Ya excedio los " + MAX_DEPOSITOS_DIARIOS + " depositos diarios.");
     }
   }
 
-  public void ingreso(double monto) {
+  public void depositar(double monto) {
     verificarMontoValido(monto);
     verificarLimiteDeDepositosDiarios(LocalDate.now());
 
-    agregarMovimiento(LocalDate.now(), monto, true);
+    agregarDeposito(LocalDate.now(), monto);
   }
 
   private void verificarExtraccionExcedeSaldo(double monto) {
@@ -62,23 +62,32 @@ public class Cuenta {
     }
   }
 
-  public void extraccion(double monto) {
+  public void extraer(double monto) {
     verificarMontoValido(monto);
     verificarExtraccionExcedeSaldo(monto);
     verificarLimiteDiario(monto);
 
-    agregarMovimiento(LocalDate.now(), monto, false);
+    agregarExtraccion(LocalDate.now(), monto);
   }
 
-  public void agregarMovimiento(LocalDate fecha, double monto, boolean esDeposito) {
-    Movimiento movimiento = new Movimiento(fecha, monto, esDeposito);
+  public void agregarDeposito(LocalDate fecha, double monto) {
+    Deposito deposito = new Deposito(fecha, monto);
+    agregarMovimiento(deposito);
+  }
+
+  public void agregarExtraccion(LocalDate fecha, double monto) {
+    Extraccion extraccion = new Extraccion(fecha, monto);
+    agregarMovimiento(extraccion);
+  }
+
+  public void agregarMovimiento(Movimiento movimiento) {
     movimientos.add(movimiento);
-    setSaldo(actualizarSaldo(monto, movimiento.isDeposito()));
+    setSaldo(saldo + movimiento.obtenerMonto());
   }
 
   public double getMontoExtraidoA(LocalDate fecha) {
     return getMovimientos().stream()
-        .filter(movimiento -> !movimiento.isDeposito() && movimiento.getFecha().equals(fecha))
+        .filter(movimiento -> movimiento instanceof Extraccion && movimiento.getFecha().equals(fecha))
         .mapToDouble(Movimiento::getMonto)
         .sum();
   }
@@ -93,13 +102,5 @@ public class Cuenta {
 
   public void setSaldo(double saldo) {
     this.saldo = saldo;
-  }
-
-  public double actualizarSaldo(double monto, boolean esDeposito) {
-    if (esDeposito) {
-      return getSaldo() + monto;
-    } else {
-      return getSaldo() - monto;
-    }
   }
 }
